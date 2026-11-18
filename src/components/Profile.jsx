@@ -23,7 +23,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserBooks = async () => {
       try {
-        const res = await fetch(`https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/books/user_email/${user.email}`);
+        const res = await fetch(`https://book-buddy-puce.vercel.app/api/books/user_email/${user.email}`);
         const data = await res.json();
         setBooks(data.reverse());
       } catch (err) {
@@ -40,7 +40,7 @@ const Profile = () => {
 
   const handleDelete = async () => {
     try {
-      await fetch(`https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/books/${bookToDelete}`, { method: 'DELETE' });
+      await fetch(`https://book-buddy-puce.vercel.app/api/books/${bookToDelete}`, { method: 'DELETE' });
       setBooks(prev => prev.filter(b => b._id !== bookToDelete));
       setShowDeleteModal(false);
       setBookToDelete(null);

@@ -55,7 +55,7 @@ const Contact = () => {
 
     setIsSubmitting(true);
     try {
-      await axios.post('https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/contact', {
+      await axios.post('https://book-buddy-puce.vercel.app/api/contact', {
         email: user.email,
         name: user.name,
         message: messageHTML,

@@ -109,7 +109,7 @@ export default function UploadBookAuthor() {
     formData.append('user_name', user.name);
 
     try {
-      await axios.post('https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/books/upload', formData);
+      await axios.post('https://book-buddy-puce.vercel.app/api/books/upload', formData);
       setMessage('✅ Book uploaded successfully!');
       setIsbn('');
       setBookData({ title: '', author: '', year: '' });

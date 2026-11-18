@@ -19,7 +19,7 @@ const DashboardAuthor = () => {
     setLoading(true);
     setFetchError('');
     try {
-      const res = await axios.get(`https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/books?user_email=${user.email}`);
+      const res = await axios.get(`https://book-buddy-puce.vercel.app/api/books?user_email=${user.email}`);
       const filteredUploads = res.data.filter(book => book.user_email === user.email);
       setUploads(filteredUploads);
     } catch (error) {

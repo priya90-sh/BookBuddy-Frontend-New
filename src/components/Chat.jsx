@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Logo from './Logo.jpg';
 import Footer from './footer';
 
-const BACKEND_URL = 'https://book-buddy-8wl1xji7q-priya-6416.vercel.app';
+const BACKEND_URL = 'https://book-buddy-puce.vercel.app';
 const API_URL = `${BACKEND_URL}/api`;
 
 const socket = io(BACKEND_URL, {

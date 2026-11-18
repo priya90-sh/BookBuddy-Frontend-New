@@ -20,11 +20,11 @@ const Profile = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const userRes = await fetch(`https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/books/user_email/${user.email}`);
+        const userRes = await fetch(`https://book-buddy-puce.vercel.app/api/books/user_email/${user.email}`);
         const userData = await userRes.json();
         setUserBooks(userData.reverse());
 
-        const authorRes = await fetch(`https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/books/author/${user.name}`);
+        const authorRes = await fetch(`https://book-buddy-puce.vercel.app/api/books/author/${user.name}`);
         const authorData = await authorRes.json();
 
         const filtered = authorData.filter(book => {
@@ -44,7 +44,7 @@ const Profile = () => {
 
   const handleDelete = async (bookId) => {
     try {
-      await fetch(`https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/books/${bookId}`, {
+      await fetch(`https://book-buddy-puce.vercel.app/api/books/${bookId}`, {
         method: 'DELETE',
       });
       setUserBooks(prev => prev.filter(book => book._id !== bookId));
@@ -56,7 +56,7 @@ const Profile = () => {
 
   if (!user) return null;
 
-  const profilePicUrl = `http://localhost:3001/uploads/${user.profile_pic}`;
+  const profilePicUrl = `https://book-buddy-puce.vercel.app/uploads/${user.profile_pic}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 font-sans">
@@ -185,7 +185,7 @@ const Profile = () => {
 
 const BookCard = ({ book, user, profilePicUrl, onDelete, hideDelete }) => {
   const [showPreview, setShowPreview] = useState(false);
-  const coverUrl = `http://localhost:3001/bookpic/${book.book_cover}`;
+  const coverUrl = `https://book-buddy-puce.vercel.app/bookpic/${book.book_cover}`;
 
   return (
     <>

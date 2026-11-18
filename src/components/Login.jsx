@@ -17,7 +17,7 @@ const Login = () => {
     setMessageType('');
 
     try {
-      const res = await fetch('https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/users/login', {
+      const res = await fetch('https://book-buddy-puce.vercel.app/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

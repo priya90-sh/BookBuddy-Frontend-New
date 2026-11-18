@@ -7,7 +7,7 @@ import axios from 'axios';
 import { FaStar } from 'react-icons/fa';
 import Footer from './footer';
 
-const BACKEND_URL = 'https://book-buddy-8wl1xji7q-priya-6416.vercel.app';
+const BACKEND_URL = 'https://book-buddy-puce.vercel.app';
 const API_URL = `${BACKEND_URL}/api`;
 
 const ShowBooks = () => {
