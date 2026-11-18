@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo.jpg';
@@ -6,54 +7,66 @@ import axios from 'axios';
 import { FaStar } from 'react-icons/fa';
 import Footer from './footer';
 
+const BACKEND_URL = 'https://book-buddy-8wl1xji7q-priya-6416.vercel.app';
+const API_URL = `${BACKEND_URL}/api`;
+
 const ShowBooks = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+
   const [books, setBooks] = useState([]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [enlargedImage, setEnlargedImage] = useState(null);
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    } else {
-      fetchBooks();
-    }
-  }, [user]);
-
-  const fetchBooks = async () => {
+  const fetchBooks = useCallback(async () => {
     try {
-      const res = await axios.get('https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/books');
-      setBooks(res.data);
+      const res = await axios.get(`${API_URL}/books`);
+      setBooks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Error fetching books:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    fetchBooks();
+  }, [user, navigate, fetchBooks]);
 
   const filteredBooks = books.filter((book) =>
-    book.title.toLowerCase().includes(search.toLowerCase()) ||
-    book.author.toLowerCase().includes(search.toLowerCase()) ||
-    book.genre.toLowerCase().includes(search.toLowerCase())
+    (book.title || '').toLowerCase().includes(search.toLowerCase()) ||
+    (book.author || '').toLowerCase().includes(search.toLowerCase()) ||
+    (book.genre || '').toLowerCase().includes(search.toLowerCase())
   );
 
   if (!user) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 text-gray-800">
-
       {/* Navbar */}
       <div className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md sticky top-0 z-30">
-        <img src={Logo} alt="BookBuddy Logo" className="w-14 h-14 object-cover rounded-full" />
+        <img
+          src={Logo}
+          alt="BookBuddy Logo"
+          className="w-14 h-14 object-cover rounded-full"
+        />
 
         <div className="space-x-6 hidden md:flex">
           {['Home', 'Upload', 'Chat', 'Contact Us', 'Profile'].map((label, idx) => (
             <button
               key={idx}
               onClick={() =>
-                navigate(
-                  ['/dashboardreader', '/terms', '/chat', '/contact', '/profile'][idx]
-                )
+                navigate([
+                  '/dashboardreader',
+                  '/terms',
+                  '/chat',
+                  '/contact',
+                  '/profile'
+                ][idx])
               }
               className="text-gray-700 hover:text-indigo-600 hover:underline font-medium transition"
             >
@@ -67,7 +80,7 @@ const ShowBooks = () => {
           onClick={() => setIsProfileModalOpen(true)}
         >
           <img
-            src={`http://localhost:3001/uploads/${user.profile_pic}`}
+            src={`${BACKEND_URL}/uploads/${user.profile_pic || 'default.jpg'}`}
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover border-2 border-indigo-600"
           />
@@ -83,7 +96,7 @@ const ShowBooks = () => {
         >
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <img
-              src={`http://localhost:3001/uploads/${user.profile_pic}`}
+              src={`${BACKEND_URL}/uploads/${user.profile_pic || 'default.jpg'}`}
               alt="Profile Large"
               className="w-80 h-80 rounded-full object-cover border-4 border-white shadow-2xl"
             />
@@ -121,8 +134,6 @@ const ShowBooks = () => {
 
       {/* Main Content */}
       <div className="flex-grow flex flex-col px-6 pb-10">
-
-        {/* Search */}
         <div className="w-full px-4 sm:px-8 mt-6">
           <input
             type="text"
@@ -133,7 +144,6 @@ const ShowBooks = () => {
           />
         </div>
 
-        {/* Books */}
         <div className="mt-10 flex-grow flex flex-col">
           <h2 className="text-3xl font-bold mb-6 text-indigo-700">
             All Uploaded Books
@@ -145,63 +155,55 @@ const ShowBooks = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredBooks.map((book, idx) => {
+                const coverUrl = `${BACKEND_URL}/bookpic/${book.book_cover || 'default-book.jpg'}`;
 
-              {filteredBooks.map((book, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white rounded-xl shadow-md hover:shadow-xl transition p-5 flex flex-col"
-                >
+                return (
+                  <div
+                    key={book._id || idx}
+                    className="bg-white rounded-xl shadow-md hover:shadow-xl transition p-5 flex flex-col"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <img
+                        src={`${BACKEND_URL}/uploads/${book.profile_pic || 'default.jpg'}`}
+                        alt="Uploader"
+                        className="w-10 h-10 rounded-full object-cover border-2"
+                      />
+                      <span className="font-medium text-gray-700">
+                        {book.user_name || 'BookBuddy User'}
+                      </span>
+                    </div>
 
-                  {/* Uploader */}
-                  <div className="flex items-center gap-3 mb-3">
                     <img
-                      src={`http://localhost:3001/uploads/${book.profile_pic ?? 'default.jpg'}`}
-                      alt="Uploader"
-                      className="w-10 h-10 rounded-full object-cover border-2"
+                      src={coverUrl}
+                      alt={book.title || 'Book cover'}
+                      onClick={() => setEnlargedImage(coverUrl)}
+                      className="w-full h-60 object-contain bg-gray-100 cursor-pointer p-2 rounded-lg"
                     />
-                    <span className="font-medium text-gray-700">
-                      {book.user_name}
-                    </span>
+
+                    <div className="flex mb-2 text-yellow-500">
+                      {Array.from(
+                        { length: Math.max(0, Math.min(5, Number(book.rating) || 0)) },
+                        (_, i) => <FaStar key={i} />
+                      )}
+                    </div>
+
+                    <h3 className="text-lg font-semibold">{book.title}</h3>
+                    <p className="text-sm text-gray-600">By {book.author}</p>
+                    <p className="text-sm text-gray-700 mb-1">
+                      Genre: {book.genre}
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      <span className="font-semibold">Review:</span> {book.comment}
+                    </p>
                   </div>
-
-                  {/* Book Cover */}
-                  <img
-                    src={`http://localhost:3001/bookpic/${book.book_cover || 'default-book.jpg'}`}
-                    alt={book.title}
-                    onClick={() =>
-                      setEnlargedImage(
-                        `http://localhost:3001/bookpic/${book.book_cover || 'default-book.jpg'}`
-                      )
-                    }
-                    className="w-full h-60 object-contain bg-gray-100 cursor-pointer p-2 rounded-lg"
-                  />
-
-                  {/* Rating */}
-                  <div className="flex mb-2 text-yellow-500">
-                    {Array.from({ length: book.rating || 0 }, (_, i) => (
-                      <FaStar key={i} />
-                    ))}
-                  </div>
-
-                  {/* Book Info */}
-                  <h3 className="text-lg font-semibold">{book.title}</h3>
-                  <p className="text-sm text-gray-600">By {book.author}</p>
-                  <p className="text-sm text-gray-700 mb-1">
-                    Genre: {book.genre}
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    <span className="font-semibold">Review:</span> {book.comment}
-                  </p>
-
-                </div>
-              ))}
-
+                );
+              })}
             </div>
           )}
         </div>
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

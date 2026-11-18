@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 import Signup from './components/Signup';
 import Login from './components/Login';
@@ -10,16 +11,17 @@ import DashboardReader from './components/DashboardReader';
 import Contact from './components/Contact';
 import UploadBook from './components/UploadBook';
 import Chat from './components/Chat';
-import SearchHere from './components/SearchHere'; // ✅ Fixed import
+import SearchHere from './components/SearchHere';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import TermsAndConditions from './components/TermsAndConditions';
-import Book from './components/Book'; // Import Book component
+import Book from './components/Book';
 import ShowBooks from './components/showbooks';
 import DashboardAuthor from './components/DashboardAuthor';
 import TermsAuthor from './components/Terms_author';
-import ProfileA from './components/Profile_Author'; // Import ProfileAuthor component
+import ProfileA from './components/Profile_Author';
 import UploadBookAuthor from './components/Upload_Author';
+
 function App() {
   return (
     <AuthProvider>
@@ -34,15 +36,15 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/upload" element={<UploadBook />} />
         <Route path="/chat" element={<Chat />} />
-        <Route path="/searchhere" element={<SearchHere />} /> {/* ✅ Updated path */}
+        <Route path="/searchhere" element={<SearchHere />} />
         <Route path="/terms" element={<TermsAndConditions />} />
-         <Route path="/Book" element={<Book />} />
-         <Route path="/showbooks" element={<ShowBooks />} /> {/* ✅ Updated path */}
+        <Route path="/Book" element={<Book />} />
+        <Route path="/showbooks" element={<ShowBooks />} />
         <Route path="/dashboardauthor" element={<DashboardAuthor />} />
-        <Route path="/terms_author" element={<TermsAuthor />} /> {/* ✅ Updated path */}
-        <Route path="/profile_a" element={<ProfileA />} /> {/* ✅ Updated path */}
-        <Route path="/upload_a" element={<UploadBookAuthor />} /> {/* ✅ Updated path */}
-        {/* Catch-all route for 404 */}
+        <Route path="/terms_author" element={<TermsAuthor />} />
+        <Route path="/profile_a" element={<ProfileA />} />
+        <Route path="/upload_a" element={<UploadBookAuthor />} />
+
         <Route
           path="*"
           element={

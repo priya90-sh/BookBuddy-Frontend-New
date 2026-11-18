@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo.jpg';
@@ -6,10 +7,14 @@ import axios from 'axios';
 import { FaStar } from 'react-icons/fa';
 import Footer from './footer';
 
+const BACKEND_URL = 'https://book-buddy-8wl1xji7q-priya-6416.vercel.app';
+const API_URL = `${BACKEND_URL}/api`;
+
 const ShowBooks = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
   const [books, setBooks] = useState([]);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
@@ -18,70 +23,92 @@ const ShowBooks = () => {
 
   const genre = new URLSearchParams(location.search).get('genre');
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    } else {
-      fetchBooks();
-    }
-  }, [user, genre]);
-
-  const fetchBooks = async () => {
+  const fetchBooks = useCallback(async () => {
     try {
-      const res = await axios.get(`https://book-buddy-8wl1xji7q-priya-6416.vercel.app/api/books?genre=${genre || ''}`);
-      setBooks(res.data);
+      const res = await axios.get(`${API_URL}/books`, {
+        params: { genre: genre || '' }
+      });
+
+      setBooks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Error fetching books:', err);
     }
-  };
+  }, [genre]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    fetchBooks();
+  }, [user, navigate, fetchBooks]);
 
   const filteredBooks = books.filter((book) =>
-    book.title.toLowerCase().includes(search.toLowerCase()) ||
-    book.author.toLowerCase().includes(search.toLowerCase()) ||
-    book.genre.toLowerCase().includes(search.toLowerCase())
+    (book.title || '').toLowerCase().includes(search.toLowerCase()) ||
+    (book.author || '').toLowerCase().includes(search.toLowerCase()) ||
+    (book.genre || '').toLowerCase().includes(search.toLowerCase())
   );
 
   if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 text-gray-800">
-      
       {/* Navbar */}
       <header className="flex items-center justify-between px-6 py-4 bg-white shadow sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <img src={Logo} alt="BookBuddy Logo" className="w-12 h-12 rounded-full object-cover" />
-          <span className="text-xl font-bold text-indigo-600 hidden sm:block">BookBuddy</span>
+          <img
+            src={Logo}
+            alt="BookBuddy Logo"
+            className="w-12 h-12 rounded-full object-cover"
+          />
+          <span className="text-xl font-bold text-indigo-600 hidden sm:block">
+            BookBuddy
+          </span>
         </div>
+
         <nav className="space-x-4 hidden md:flex">
-          {['/dashboardreader', '/terms', '/chat', '/contact', '/profile'].map((path, i) => (
+          {[
+            { path: '/dashboardreader', label: 'Home' },
+            { path: '/terms', label: 'Upload' },
+            { path: '/chat', label: 'Chat' },
+            { path: '/contact', label: 'Contact Us' },
+            { path: '/profile', label: 'Profile' }
+          ].map((item) => (
             <button
-              key={i}
-              onClick={() => navigate(path)}
+              key={item.path}
+              onClick={() => navigate(item.path)}
               className="text-gray-700 hover:text-indigo-600 font-medium transition hover:underline underline-offset-4"
             >
-              {['Home', 'Upload', /*'Chat',*/ 'Contact Us', 'Profile'][i]}
+              {item.label}
             </button>
           ))}
         </nav>
+
         <div
           className="flex items-center gap-2 cursor-pointer"
           onClick={() => setIsProfileModalOpen(true)}
         >
           <img
-            src={`http://localhost:3001/uploads/${user.profile_pic}`}
+            src={`${BACKEND_URL}/uploads/${user.profile_pic || 'default.jpg'}`}
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover border-2 border-indigo-500"
           />
-          <span className="text-sm font-semibold text-indigo-700">{user.name}</span>
+          <span className="text-sm font-semibold text-indigo-700">
+            {user.name}
+          </span>
         </div>
       </header>
 
       {/* Profile Modal */}
       {isProfileModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onClick={() => setIsProfileModalOpen(false)}>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
+          onClick={() => setIsProfileModalOpen(false)}
+        >
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <img
-              src={`http://localhost:3001/uploads/${user.profile_pic}`}
+              src={`${BACKEND_URL}/uploads/${user.profile_pic || 'default.jpg'}`}
               alt="Profile Large"
               className="w-72 h-72 rounded-full object-cover border-4 border-white shadow-xl"
             />
@@ -97,10 +124,13 @@ const ShowBooks = () => {
 
       {/* Book Cover Modal */}
       {isBookModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setIsBookModalOpen(false)}>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setIsBookModalOpen(false)}
+        >
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <img
-              src={`http://localhost:3001/bookpic/${selectedBookCover}`}
+              src={`${BACKEND_URL}/bookpic/${selectedBookCover}`}
               alt="Book Cover Large"
               className="w-[90vw] max-w-md h-auto rounded-lg shadow-xl border-4 border-white"
             />
@@ -137,46 +167,61 @@ const ShowBooks = () => {
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredBooks.map((book, idx) => (
-              <div key={idx} className="bg-white p-5 rounded-2xl shadow hover:shadow-xl transition duration-300 border border-gray-100">
-                
-                {/* Uploader Info */}
-                <div className="flex items-center gap-3 mb-4">
+            {filteredBooks.map((book, idx) => {
+              const coverName = book.book_cover || 'default-book.jpg';
+
+              return (
+                <div
+                  key={book._id || idx}
+                  className="bg-white p-5 rounded-2xl shadow hover:shadow-xl transition duration-300 border border-gray-100"
+                >
+                  {/* Uploader Info */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <img
+                      src={`${BACKEND_URL}/uploads/${book.profile_pic || 'default.jpg'}`}
+                      alt="Uploader"
+                      className="w-10 h-10 rounded-full object-cover border"
+                    />
+                    <span className="font-semibold text-gray-800">
+                      {book.user_name || 'BookBuddy User'}
+                    </span>
+                  </div>
+
+                  {/* Book Cover */}
                   <img
-                    src={`http://localhost:3001/uploads/${book.profile_pic ?? 'default.jpg'}`}
-                    alt="Uploader"
-                    className="w-10 h-10 rounded-full object-cover border"
+                    src={`${BACKEND_URL}/bookpic/${coverName}`}
+                    alt={book.title || 'Book cover'}
+                    className="w-full h-48 object-cover rounded-lg mb-4 cursor-pointer transition-transform hover:scale-105"
+                    onClick={() => {
+                      setSelectedBookCover(coverName);
+                      setIsBookModalOpen(true);
+                    }}
                   />
-                  <span className="font-semibold text-gray-800">{book.user_name}</span>
+
+                  {/* Ratings */}
+                  <div className="flex mb-2 text-yellow-500">
+                    {Array.from(
+                      { length: Math.max(0, Math.min(5, Number(book.rating) || 0)) },
+                      (_, i) => <FaStar key={i} className="mr-1" />
+                    )}
+                  </div>
+
+                  {/* Book Info */}
+                  <h3 className="text-lg font-semibold text-indigo-800">
+                    {book.title}
+                  </h3>
+                  <p className="text-sm text-gray-700 mb-1">
+                    By {book.author}
+                  </p>
+                  <p className="text-sm text-gray-700 mb-1">
+                    Genre: {book.genre}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-semibold">Review:</span> {book.comment}
+                  </p>
                 </div>
-
-                {/* Book Cover */}
-                <img
-                  src={`http://localhost:3001/bookpic/${book.book_cover || 'default-book.jpg'}`}
-                  alt={book.title}
-                  className="w-full h-48 object-cover rounded-lg mb-4 cursor-pointer transition-transform hover:scale-105"
-                  onClick={() => {
-                    setSelectedBookCover(book.book_cover || 'default-book.jpg');
-                    setIsBookModalOpen(true);
-                  }}
-                />
-
-                {/* Ratings */}
-                <div className="flex mb-2 text-yellow-500">
-                  {Array.from({ length: book.rating || 0 }, (_, i) => (
-                    <FaStar key={i} className="mr-1" />
-                  ))}
-                </div>
-
-                {/* Book Info */}
-                <h3 className="text-lg font-semibold text-indigo-800">{book.title}</h3>
-                <p className="text-sm text-gray-700 mb-1">By {book.author}</p>
-                <p className="text-sm text-gray-700 mb-1">Genre: {book.genre}</p>
-                <p className="text-sm text-gray-600">
-                  <span className="font-semibold">Review:</span> {book.comment}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
